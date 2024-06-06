@@ -387,6 +387,54 @@ class Api(object):
         })
         self._call("namecheap.domains.dns.setHosts", extra_payload)
 
+    def domains_dns_addHosts(self, domain, host_records):
+        """This method is absent in the original API. host_records is a list of
+        dicts. The advantage over `domains_dns_addHost` above is a single
+        network request rather than one for each record add having no knowledge
+        about the other records.
+
+        Example setting CNAME records for e.g. parking domains at bodis:
+
+        api.domains_dns_addHosts('example.com', [
+            {
+            "RecordType": "CNAME",
+            "HostName": "@",
+            "Address": "xyz.bodis.com",
+            "TTL": 1800
+            },
+            {
+            "RecordType": "CNAME",
+            "HostName": "*",
+            "Address": "xyz.bodis.com",
+            "TTL": 1800
+            },
+            {
+            "RecordType": "CNAME",
+            "HostName": "www",
+            "Address": "xyz.bodis.com",
+            "TTL": 1800
+            },
+        ])
+        """
+        host_records_remote = self.domains_dns_getHosts(domain)
+
+        print("Remote: %i" % len(host_records_remote))
+        
+        for host_record in host_records:
+            host_records_remote.append(host_record)
+
+        host_records_remote = [self._elements_names_fix(x) for x in host_records_remote]
+
+        print("To set: %i" % len(host_records_remote))
+
+        extra_payload = self._list_of_dictionaries_to_numbered_payload(host_records_remote)
+        sld, tld = domain.split(".")
+        extra_payload.update({
+            'SLD': sld,
+            'TLD': tld
+        })
+        self._call("namecheap.domains.dns.setHosts", extra_payload)
+
     def domains_dns_delHost(self, domain, host_record):
         """This method is absent in original API as well. It executes non-atomic
         remove operation over the host record which has the following Type,

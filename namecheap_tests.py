@@ -214,6 +214,89 @@ def test_domains_dns_addHost():
     ]
     assert_equal(hosts, expected_result)
 
+def test_domains_dns_addHosts():
+    api = Api(username, api_key, username, ip_address, sandbox=True)
+    domain_name = test_register_domain()
+    api.domains_dns_setHosts(
+        domain_name,
+        [{
+            'HostName': '@',
+            'RecordType': 'TXT',
+            'Address': 'specialtxtcode',
+            'TTL': '1800'
+        }]
+    )
+    api.domains_dns_addHosts(
+        domain_name,
+        [{
+            'RecordType': 'CNAME',
+            'HostName': '@',
+            'Address': 'xyz.bodis.com',
+            'TTL': '1800'
+        }, {
+            'RecordType': 'CNAME',
+            'HostName': '*',
+            'Address': 'xyz.bodis.com',
+            'TTL': '1800'
+        }, {
+            'RecordType': 'CNAME',
+            'HostName': 'www',
+            'Address': 'xyz.bodis.com',
+            'TTL': '1800'
+        }]
+    )
+
+    hosts = api.domains_dns_getHosts(domain_name)
+
+    # these might change
+    del hosts[0]['HostId']
+    del hosts[1]['HostId']
+
+    expected_result = [
+        {
+            'Name': '@',
+            'Address': 'xyz.bodis.com',
+            'TTL': '1800',
+            'Type': 'CNAME',
+            'MXPref': '10',
+            'AssociatedAppTitle': '',
+            'FriendlyName': '',
+            'IsActive': 'true',
+            'IsDDNSEnabled': 'false'
+        }, {
+            'Name': '*',
+            'Address': 'xyz.bodis.com',
+            'TTL': '1800',
+            'Type': 'CNAME',
+            'MXPref': '10',
+            'AssociatedAppTitle': '',
+            'FriendlyName': '',
+            'IsActive': 'true',
+            'IsDDNSEnabled': 'false'
+        }, {
+            'Name': 'www',
+            'Address': 'xyz.bodis.com',
+            'TTL': '1800',
+            'Type': 'CNAME',
+            'MXPref': '10',
+            'AssociatedAppTitle': '',
+            'FriendlyName': '',
+            'IsActive': 'true',
+            'IsDDNSEnabled': 'false'
+        }, {
+            'Name': '@',
+            'Address': 'specialtxtcode',
+            'TTL': '1800',
+            'Type': '@',
+            'MXPref': '10',
+            'AssociatedAppTitle': '',
+            'FriendlyName': '',
+            'IsActive': 'true',
+            'IsDDNSEnabled': 'false'
+        }
+    ]
+    assert_equal(hosts, expected_result)
+
 
 def test_domains_dns_bulkAddHosts():
     api = Api(username, api_key, username, ip_address, sandbox=True)
